@@ -92,7 +92,15 @@ test_mirror_speed() {
     mirrors["Kartolo"]="http://kartolo.sby.datautama.net.id"
     mirrors["Buaya"]="http://buaya.klas.or.id"
     mirrors["Kebo"]="http://kebo.pens.ac.id"
+    mirrors["Poliwangi"]="http://mirror.poliwangi.ac.id" # Ditambahkan
     mirrors["Official_Ubuntu"]="http://archive.ubuntu.com"
+    
+    # Logic tambahan untuk Singapore agar sesuai OS
+    if [[ "$ID" == "ubuntu" ]]; then
+        mirrors["Singapore"]="http://download.nus.edu.sg/mirror/ubuntu"
+    else
+        mirrors["Singapore"]="http://ftp.sg.debian.org/debian"
+    fi
 
     results=()
     for name in "${!mirrors[@]}"; do
@@ -131,6 +139,7 @@ declare -A MIRROR_MAP
 MIRROR_MAP["kartolo"]="http://kartolo.sby.datautama.net.id"
 MIRROR_MAP["buaya"]="http://buaya.klas.or.id"
 MIRROR_MAP["kebo"]="http://kebo.pens.ac.id"
+MIRROR_MAP["poliwangi"]="http://mirror.poliwangi.ac.id" # Ditambahkan
 MIRROR_MAP["official"]=""
 
 choose_mirror_noninteractive() {
@@ -144,6 +153,16 @@ choose_mirror_noninteractive() {
             ;;
         kebo|Kebo)
             apply_mirror "Kebo" "${MIRROR_MAP[kebo]}"
+            ;;
+        poliwangi|Poliwangi) # Ditambahkan
+            apply_mirror "Poliwangi" "${MIRROR_MAP[poliwangi]}"
+            ;;
+        sg|Singapore) # Ditambahkan
+            if [[ "$ID" == "ubuntu" ]]; then
+                apply_mirror "Singapore (NUS)" "http://download.nus.edu.sg/mirror/ubuntu"
+            else
+                apply_mirror "Singapore (Debian)" "http://ftp.sg.debian.org/debian"
+            fi
             ;;
         official|Official)
             if [[ "$ID" == "ubuntu" ]]; then
@@ -161,7 +180,7 @@ choose_mirror_noninteractive() {
             exit 0
             ;;
         *)
-            error "Unknown mirror: $choice. Use: kartolo, buaya, kebo, official, restore, or test"
+            error "Unknown mirror: $choice. Use: kartolo, buaya, kebo, poliwangi, sg, official, restore, or test"
             ;;
     esac
 }
@@ -173,26 +192,36 @@ show_menu() {
         echo "[1] Kartolo (ID) — Surabaya"
         echo "[2] Buaya (ID) — Jakarta (KLAS)"
         echo "[3] Kebo (ID) — Surabaya (PENS)"
-        echo "[4] Official (Global)"
-        echo "[5] Restore backup"
-        echo "[6] Test mirror speed"
-        echo "[7] Exit"
-        read -rp "Choose an option [1-7]: " choice
+        echo "[4] Poliwangi (ID) — Banyuwangi"  # Ditambahkan
+        echo "[5] Singapore (SG) — NUS/Debian"  # Ditambahkan
+        echo "[6] Official (Global)"
+        echo "[7] Restore backup"
+        echo "[8] Test mirror speed"
+        echo "[9] Exit"
+        read -rp "Choose an option [1-9]: " choice
 
         case $choice in
             1) apply_mirror "Kartolo" "${MIRROR_MAP[kartolo]}"; break;;
             2) apply_mirror "Buaya" "${MIRROR_MAP[buaya]}"; break;;
             3) apply_mirror "Kebo" "${MIRROR_MAP[kebo]}"; break;;
-            4)
+            4) apply_mirror "Poliwangi" "${MIRROR_MAP[poliwangi]}"; break;; # Ditambahkan
+            5) # Ditambahkan
+                if [[ "$ID" == "ubuntu" ]]; then
+                    apply_mirror "Singapore (NUS)" "http://download.nus.edu.sg/mirror/ubuntu"
+                else
+                    apply_mirror "Singapore (Debian)" "http://ftp.sg.debian.org/debian"
+                fi
+                break;;
+            6)
                 if [[ "$ID" == "ubuntu" ]]; then
                     apply_mirror "Official" "http://archive.ubuntu.com"
                 else
                     apply_mirror "Official" "http://deb.debian.org"
                 fi
                 break;;
-            5) restore_backup; exit 0;;
-            6) test_mirror_speed;;
-            7) log "Exiting."; exit 0;;
+            7) restore_backup; exit 0;;
+            8) test_mirror_speed;;
+            9) log "Exiting."; exit 0;;
             *) warn "Invalid option. Please try again.";;
         esac
     done
@@ -202,7 +231,7 @@ show_menu() {
 main() {
     clear
     echo -e "${CYAN_PURPLE}💜 Mirror Selector for Ubuntu/Debian 💜${NC}"
-    echo -e "${CYAN_PURPLE}   Optimized for Indonesian networks${NC}\n"
+    echo -e "${CYAN_PURPLE}   Optimized for Indonesian & SG networks${NC}\n"
 
     check_internet
 
