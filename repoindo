@@ -24,6 +24,27 @@ print_info() { echo -e "${BLUE}➽ $1${NC}"; }
 print_error() { echo -e "${RED}✘ ✘ $1${NC}"; }
 print_success() { echo -e "${GREEN}✔ $1${NC}"; }
 
+# === ANIMASI LOADING (UNIVERSAL COMPATIBLE) ===
+animation_loading() {
+    local pid=$1
+    local delay=0.1
+    local spinstr='|/-\'
+    
+    # Sembunyikan kursor
+    tput civis 2>/dev/null || true
+    
+    while kill -0 "$pid" 2>/dev/null; do
+        local temp=${spinstr#?}
+        # Menggunakan \r untuk rewrite line (Support Semua Terminal)
+        printf "\r${CYAN}   Scanning Network... [%c] ${NC}" "$spinstr"
+        local spinstr=$temp${spinstr%"$temp"}
+        sleep $delay
+    done
+    # Bersihkan baris
+    printf "\r\033[K"
+    tput cnorm 2>/dev/null || true
+}
+
 # === CEK INTERNET ===
 check_internet() {
     if ! timeout 5 curl -sf http://1.1.1.1 > /dev/null 2>&1; then
@@ -32,31 +53,20 @@ check_internet() {
     fi
 }
 
-# === DETEKSI REPO AKTIF (FITUR BARU) ===
+# === DETEKSI REPO AKTIF ===
 get_current_mirror() {
     if [[ ! -f /etc/apt/sources.list ]]; then
         echo "Tidak Diketahui"
         return
     fi
-    
-    # Baca isi file
     local content=$(cat /etc/apt/sources.list)
-
-    if [[ "$content" == *"kartolo"* ]]; then
-        echo "Kartolo (ID)"
-    elif [[ "$content" == *"buaya"* ]]; then
-        echo "Buaya (ID)"
-    elif [[ "$content" == *"kebo"* ]]; then
-        echo "Kebo (PENS)"
-    elif [[ "$content" == *"poliwangi"* ]]; then
-        echo "Poliwangi (ID)"
-    elif [[ "$content" == *"nus.edu.sg"* ]] || [[ "$content" == *"sg.debian.org"* ]]; then
-        echo "Singapore (SG)"
-    elif [[ "$content" == *"archive.ubuntu.com"* ]] || [[ "$content" == *"deb.debian.org"* ]]; then
-        echo "Official (Global)"
-    else
-        echo "Custom / Mixed"
-    fi
+    if [[ "$content" == *"kartolo"* ]]; then echo "Kartolo (ID)"
+    elif [[ "$content" == *"buaya"* ]]; then echo "Buaya (ID)"
+    elif [[ "$content" == *"kebo"* ]]; then echo "Kebo (PENS)"
+    elif [[ "$content" == *"poliwangi"* ]]; then echo "Poliwangi (ID)"
+    elif [[ "$content" == *"nus.edu.sg"* ]] || [[ "$content" == *"sg.debian.org"* ]]; then echo "Singapore (SG)"
+    elif [[ "$content" == *"archive.ubuntu.com"* ]] || [[ "$content" == *"deb.debian.org"* ]]; then echo "Official (Global)"
+    else echo "Custom / Mixed"; fi
 }
 
 # === INFO SISTEM ===
@@ -73,20 +83,17 @@ get_os_info() {
     echo "$OS_NAME|$CODE"
 }
 
-# === TAMPILAN HEADER (MENU UTAMA) ===
+# === TAMPILAN HEADER ===
 show_banner() {
     clear
-    # Ambil Info OS
     OS_DATA=$(get_os_info)
     OS_NAME=$(echo $OS_DATA | cut -d'|' -f1)
     OS_CODE=$(echo $OS_DATA | cut -d'|' -f2)
-    
-    # Ambil Info Repo Aktif
     CURRENT_REPO=$(get_current_mirror)
     
     echo -e "${YELLOW}┌──────────────────────────────────────────────┐${NC}"
-    echo -e "${YELLOW}│${NC} ${LIGHT}◈ REPO INDO MANAGER - PREMIUM EDITION ◈   ${NC}   ${YELLOW}│${NC}"
-    echo -e "${YELLOW}│${NC} ${LIGHT}       Optimized for Indo & SG VPS       ${NC}     ${YELLOW}│${NC}"
+    echo -e "${YELLOW}│${NC} ${LIGHT}◈ REPO INDO MANAGER - PREMIUM EDITION ◈     ${NC} ${YELLOW}│${NC}"
+    echo -e "${YELLOW}│${NC} ${LIGHT}       Optimized for Indo & SG VPS          ${NC} ${YELLOW}│${NC}"
     echo -e "${YELLOW}└──────────────────────────────────────────────┘${NC}"
     echo -e ""
     echo -e "${YELLOW}┌────────────${NC} ${LIGHT}◈ Informasi Sistem ◈ ${NC}${YELLOW}────────────┐${NC}"
@@ -96,7 +103,7 @@ show_banner() {
     echo -e "${YELLOW}└──────────────────────────────────────────────┘${NC}"
 }
 
-# === SENI SELEBRASI (AESTHETIC SUCCESS) ===
+# === SENI SELEBRASI ===
 show_success_art() {
     local msg="$1"
     clear
@@ -126,7 +133,7 @@ show_success_art() {
     echo -e ""
 }
 
-# === LOGIKA BACKUP & GENERATE ===
+# === LOGIKA REPO ===
 backup_sources() {
     if [[ -f /etc/apt/sources.list ]]; then
         print_info "Membackup sources.list lama..."
@@ -135,42 +142,35 @@ backup_sources() {
 }
 
 generate_ubuntu_sources() {
-    local MIRROR_URL="$1"
-    local CODENAME="$2"
     cat > /etc/apt/sources.list <<EOF
-deb $MIRROR_URL/ubuntu/ $CODENAME main restricted
-deb $MIRROR_URL/ubuntu/ $CODENAME-updates main restricted
-deb $MIRROR_URL/ubuntu/ $CODENAME universe
-deb $MIRROR_URL/ubuntu/ $CODENAME-updates universe
-deb $MIRROR_URL/ubuntu/ $CODENAME multiverse
-deb $MIRROR_URL/ubuntu/ $CODENAME-updates multiverse
-deb $MIRROR_URL/ubuntu/ $CODENAME-backports main restricted universe multiverse
-deb $MIRROR_URL/ubuntu/ $CODENAME-security main restricted
-deb $MIRROR_URL/ubuntu/ $CODENAME-security universe
+deb $1/ubuntu/ $2 main restricted
+deb $1/ubuntu/ $2-updates main restricted
+deb $1/ubuntu/ $2 universe
+deb $1/ubuntu/ $2-updates universe
+deb $1/ubuntu/ $2 multiverse
+deb $1/ubuntu/ $2-updates multiverse
+deb $1/ubuntu/ $2-backports main restricted universe multiverse
+deb $1/ubuntu/ $2-security main restricted
+deb $1/ubuntu/ $2-security universe
 EOF
 }
 
 generate_debian_sources() {
-    local MIRROR_URL="$1"
-    local CODENAME="$2"
     cat > /etc/apt/sources.list <<EOF
-deb $MIRROR_URL/debian/ $CODENAME main contrib non-free
-deb $MIRROR_URL/debian/ $CODENAME-updates main contrib non-free
-deb http://security.debian.org/debian-security $CODENAME-security main contrib non-free
+deb $1/debian/ $2 main contrib non-free
+deb $1/debian/ $2-updates main contrib non-free
+deb http://security.debian.org/debian-security $2-security main contrib non-free
 EOF
 }
 
 apply_mirror() {
     local name="$1"
     local url="$2"
-    
-    # Deteksi OS variables
     if [[ ! -f /etc/os-release ]]; then print_error "OS Tidak didukung"; exit 1; fi
     . /etc/os-release
     CODENAME=${VERSION_CODENAME:-bionic}
     
     backup_sources
-    
     if [[ "$ID" == "ubuntu" ]]; then
         print_info "Configuring Ubuntu ($CODENAME) -> $name"
         generate_ubuntu_sources "$url" "$CODENAME"
@@ -178,8 +178,7 @@ apply_mirror() {
         print_info "Configuring Debian ($CODENAME) -> $name"
         generate_debian_sources "$url" "$CODENAME"
     else
-        print_error "OS bukan Ubuntu/Debian!"
-        return
+        print_error "OS bukan Ubuntu/Debian!"; return
     fi
     
     print_info "Melakukan Update Repository..."
@@ -195,67 +194,79 @@ restore_backup() {
     if [[ -n "$latest_backup" ]]; then
         print_info "Mengembalikan backup: $latest_backup"
         cp "$latest_backup" /etc/apt/sources.list
-        print_success "Backup berhasil direstore. Silakan jalankan update."
+        print_success "Backup direstore. Silakan update."
         read -p "Tekan Enter..."
     else
-        print_error "Tidak ada file backup ditemukan."
+        print_error "Backup tidak ditemukan."
         read -p "Tekan Enter..."
     fi
 }
 
+# === SPEED TEST WITH ANIMATION ===
 test_mirror_speed() {
     clear
     echo -e "${YELLOW}┌──────────────────────────────────────────────┐${NC}"
-    echo -e "${YELLOW}│${NC} ${LIGHT}           SPEED TEST MIRROR SERVER       ${NC} ${YELLOW}│${NC}"
+    echo -e "${YELLOW}│${NC} ${LIGHT}           SPEED TEST MIRROR SERVER         ${NC} ${YELLOW}│${NC}"
     echo -e "${YELLOW}└──────────────────────────────────────────────┘${NC}"
-    print_info "Sedang melakukan ping..."
-
+    
     if [[ ! -f /etc/os-release ]]; then return; fi
     . /etc/os-release
     
+    # 1. Definisikan Mirror
     declare -A mirrors
     mirrors["Kartolo"]="http://kartolo.sby.datautama.net.id"
     mirrors["Buaya"]="http://buaya.klas.or.id"
     mirrors["Kebo"]="http://kebo.pens.ac.id"
     mirrors["Poliwangi"]="http://mirror.poliwangi.ac.id"
     mirrors["Official"]="http://archive.ubuntu.com"
-    
-    if [[ "$ID" == "ubuntu" ]]; then
-        mirrors["Singapore"]="http://download.nus.edu.sg/mirror/ubuntu"
+    if [[ "$ID" == "ubuntu" ]]; then mirrors["Singapore"]="http://download.nus.edu.sg/mirror/ubuntu"
+    else mirrors["Singapore"]="http://ftp.sg.debian.org"; fi
+
+    # 2. Buat File Temp
+    TMP_FILE=$(mktemp)
+
+    # 3. Jalankan Proses Ping di Background
+    (
+        for name in "${!mirrors[@]}"; do
+            url="${mirrors[$name]}"
+            if [[ "$ID" == "debian" ]] && [[ "$name" == *"Official"* ]]; then url="http://deb.debian.org/debian"; fi
+            
+            local test_url="$url"
+            if [[ "$name" == "Singapore" && "$ID" == "debian" ]]; then test_url="$url/debian"; fi
+
+            if timeout 5 curl -sf --max-time 5 --head "$test_url" > /dev/null 2>&1; then
+                time=$(curl -sf --max-time 5 -w "%{time_total}" -o /dev/null -s "$test_url")
+                echo "$time:$name" >> "$TMP_FILE"
+            else
+                echo "999:$name" >> "$TMP_FILE"
+            fi
+        done
+    ) &
+    BG_PID=$!
+
+    # 4. Tampilkan Animasi
+    animation_loading $BG_PID
+
+    # 5. Ambil Hasil
+    if [[ -f "$TMP_FILE" ]]; then
+        IFS=$'\n' sorted=($(sort -n "$TMP_FILE"))
+        unset IFS
+        rm -f "$TMP_FILE"
+
+        echo -e "\n${PURPLE}=== HASIL TEST KECEPATAN ===${NC}"
+        for res in "${sorted[@]}"; do
+            time="${res%%:*}"
+            name="${res#*:}"
+            if [[ "$time" == "999" ]]; then
+                echo -e "${RED}  ❌ $name: Unreachable${NC}"
+            else
+                printf "${GREEN}  ⚡ %.3f det${NC} → %s\n" "$time" "$name"
+            fi
+        done
     else
-        mirrors["Singapore"]="http://ftp.sg.debian.org"
+        print_error "Gagal mengambil data speedtest."
     fi
-
-    results=()
-    for name in "${!mirrors[@]}"; do
-        url="${mirrors[$name]}"
-        if [[ "$ID" == "debian" ]] && [[ "$name" == *"Official"* ]]; then url="http://deb.debian.org/debian"; fi
-        
-        # Test URL Logic
-        local test_url="$url"
-        if [[ "$name" == "Singapore" && "$ID" == "debian" ]]; then test_url="$url/debian"; fi
-
-        if timeout 5 curl -sf --max-time 5 --head "$test_url" > /dev/null 2>&1; then
-            time=$(curl -sf --max-time 5 -w "%{time_total}" -o /dev/null -s "$test_url")
-            results+=("$time:$name")
-        else
-            results+=("999:$name")
-        fi
-    done
-
-    IFS=$'\n' sorted=($(sort -n <<<"${results[*]}"))
-    unset IFS
-
-    echo -e "\n${PURPLE}=== HASIL TEST KECEPATAN ===${NC}"
-    for res in "${sorted[@]}"; do
-        time="${res%%:*}"
-        name="${res#*:}"
-        if [[ "$time" == "999" ]]; then
-            echo -e "${RED}  ❌ $name: Unreachable${NC}"
-        else
-            printf "${GREEN}  ⚡ %.3f det${NC} → %s\n" "$time" "$name"
-        fi
-    done
+    
     echo ""
     read -p "Tekan Enter untuk kembali..."
 }
@@ -267,25 +278,18 @@ MIRROR_MAP["buaya"]="http://buaya.klas.or.id"
 MIRROR_MAP["kebo"]="http://kebo.pens.ac.id"
 MIRROR_MAP["poliwangi"]="http://mirror.poliwangi.ac.id"
 
-# === LOGIC SG & OFFICIAL ===
 run_sg() {
     . /etc/os-release
-    if [[ "$ID" == "ubuntu" ]]; then
-        apply_mirror "Singapore (NUS)" "http://download.nus.edu.sg/mirror/ubuntu"
-    else
-        apply_mirror "Singapore (Debian)" "http://ftp.sg.debian.org"
-    fi
+    if [[ "$ID" == "ubuntu" ]]; then apply_mirror "Singapore (NUS)" "http://download.nus.edu.sg/mirror/ubuntu"
+    else apply_mirror "Singapore (Debian)" "http://ftp.sg.debian.org"; fi
 }
 run_official() {
     . /etc/os-release
-    if [[ "$ID" == "ubuntu" ]]; then
-        apply_mirror "Official" "http://archive.ubuntu.com"
-    else
-        apply_mirror "Official" "http://deb.debian.org"
-    fi
+    if [[ "$ID" == "ubuntu" ]]; then apply_mirror "Official" "http://archive.ubuntu.com"
+    else apply_mirror "Official" "http://deb.debian.org"; fi
 }
 
-# === MODE NON-INTERAKTIF (Command Line Arguments) ===
+# === MAIN (ARGUMENTS) ===
 if [[ $# -gt 0 ]]; then
     check_internet
     case "$1" in
@@ -302,11 +306,10 @@ if [[ $# -gt 0 ]]; then
     exit 0
 fi
 
-# === MAIN LOOP (INTERACTIVE MENU) ===
+# === MAIN MENU ===
 while true; do
     check_internet
     show_banner
-    
     echo -e "${YELLOW} [1] ${NC} Kartolo (Surabaya)     ${GREEN}✅ Recommended${NC}"
     echo -e "${YELLOW} [2] ${NC} Buaya   (Jakarta - KLAS)"
     echo -e "${YELLOW} [3] ${NC} Kebo    (Surabaya - PENS)"
@@ -320,7 +323,6 @@ while true; do
     echo ""
     echo -e -n "${LIGHT} Pilih Menu [1-9]: ${NC}"
     read choice
-
     case $choice in
         1) apply_mirror "Kartolo" "${MIRROR_MAP[kartolo]}"; read -p "Tekan Enter..." ;;
         2) apply_mirror "Buaya" "${MIRROR_MAP[buaya]}"; read -p "Tekan Enter..." ;;
