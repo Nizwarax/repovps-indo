@@ -32,6 +32,33 @@ check_internet() {
     fi
 }
 
+# === DETEKSI REPO AKTIF (FITUR BARU) ===
+get_current_mirror() {
+    if [[ ! -f /etc/apt/sources.list ]]; then
+        echo "Tidak Diketahui"
+        return
+    fi
+    
+    # Baca isi file
+    local content=$(cat /etc/apt/sources.list)
+
+    if [[ "$content" == *"kartolo"* ]]; then
+        echo "Kartolo (ID)"
+    elif [[ "$content" == *"buaya"* ]]; then
+        echo "Buaya (ID)"
+    elif [[ "$content" == *"kebo"* ]]; then
+        echo "Kebo (PENS)"
+    elif [[ "$content" == *"poliwangi"* ]]; then
+        echo "Poliwangi (ID)"
+    elif [[ "$content" == *"nus.edu.sg"* ]] || [[ "$content" == *"sg.debian.org"* ]]; then
+        echo "Singapore (SG)"
+    elif [[ "$content" == *"archive.ubuntu.com"* ]] || [[ "$content" == *"deb.debian.org"* ]]; then
+        echo "Official (Global)"
+    else
+        echo "Custom / Mixed"
+    fi
+}
+
 # === INFO SISTEM ===
 get_os_info() {
     if [ -f /etc/os-release ]; then
@@ -54,15 +81,18 @@ show_banner() {
     OS_NAME=$(echo $OS_DATA | cut -d'|' -f1)
     OS_CODE=$(echo $OS_DATA | cut -d'|' -f2)
     
+    # Ambil Info Repo Aktif
+    CURRENT_REPO=$(get_current_mirror)
+    
     echo -e "${YELLOW}┌──────────────────────────────────────────────┐${NC}"
     echo -e "${YELLOW}│${NC} ${LIGHT}◈ REPO INDO MANAGER - PREMIUM EDITION ◈   ${NC}   ${YELLOW}│${NC}"
-    echo -e "${YELLOW}│${NC} ${LIGHT}       Optimized for Indo & SG VPS       ${NC}    ${YELLOW}│${NC}"
+    echo -e "${YELLOW}│${NC} ${LIGHT}       Optimized for Indo & SG VPS       ${NC}   ${YELLOW}│${NC}"
     echo -e "${YELLOW}└──────────────────────────────────────────────┘${NC}"
     echo -e ""
     echo -e "${YELLOW}┌────────────${NC} ${LIGHT}◈ Informasi Sistem ◈ ${NC}${YELLOW}────────────┐${NC}"
     echo -e "${YELLOW}│${NC} ➽ OS         : $OS_NAME "
     echo -e "${YELLOW}│${NC} ➽ Codename   : ${GREEN}${OS_CODE^^}${NC} "
-    echo -e "${YELLOW}│${NC} ➽ Status     : ${CYAN}ONLINE${NC} "
+    echo -e "${YELLOW}│${NC} ➽ Repo Aktif : ${CYAN}$CURRENT_REPO${NC} "
     echo -e "${YELLOW}└──────────────────────────────────────────────┘${NC}"
 }
 
@@ -176,7 +206,7 @@ restore_backup() {
 test_mirror_speed() {
     clear
     echo -e "${YELLOW}┌──────────────────────────────────────────────┐${NC}"
-    echo -e "${YELLOW}│${NC} ${LIGHT}           SPEED TEST MIRROR SERVER         ${NC} ${YELLOW}│${NC}"
+    echo -e "${YELLOW}│${NC} ${LIGHT}           SPEED TEST MIRROR SERVER       ${NC} ${YELLOW}│${NC}"
     echo -e "${YELLOW}└──────────────────────────────────────────────┘${NC}"
     print_info "Sedang melakukan ping..."
 
