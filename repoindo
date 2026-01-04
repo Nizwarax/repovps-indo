@@ -86,7 +86,7 @@ show_banner() {
     
     echo -e "${YELLOW}┌──────────────────────────────────────────────┐${NC}"
     echo -e "${YELLOW}│${NC} ${LIGHT}◈ REPO INDO MANAGER - PREMIUM EDITION ◈   ${NC}   ${YELLOW}│${NC}"
-    echo -e "${YELLOW}│${NC} ${LIGHT}       Optimized for Indo & SG VPS       ${NC}    ${YELLOW}│${NC}"
+    echo -e "${YELLOW}│${NC} ${LIGHT}       Optimized for Indo & SG VPS       ${NC}     ${YELLOW}│${NC}"
     echo -e "${YELLOW}└──────────────────────────────────────────────┘${NC}"
     echo -e ""
     echo -e "${YELLOW}┌────────────${NC} ${LIGHT}◈ Informasi Sistem ◈ ${NC}${YELLOW}────────────┐${NC}"
