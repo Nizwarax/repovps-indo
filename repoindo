@@ -55,8 +55,8 @@ show_banner() {
     OS_CODE=$(echo $OS_DATA | cut -d'|' -f2)
     
     echo -e "${YELLOW}┌──────────────────────────────────────────────┐${NC}"
-    echo -e "${YELLOW}│${NC} ${LIGHT}◈ REPO INDO MANAGER - PREMIUM EDITION ◈   ${NC} ${YELLOW}│${NC}"
-    echo -e "${YELLOW}│${NC} ${LIGHT}       Optimized for Indo & SG VPS       ${NC} ${YELLOW}│${NC}"
+    echo -e "${YELLOW}│${NC} ${LIGHT}◈ REPO INDO MANAGER - PREMIUM EDITION ◈   ${NC}   ${YELLOW}│${NC}"
+    echo -e "${YELLOW}│${NC} ${LIGHT}       Optimized for Indo & SG VPS       ${NC}    ${YELLOW}│${NC}"
     echo -e "${YELLOW}└──────────────────────────────────────────────┘${NC}"
     echo -e ""
     echo -e "${YELLOW}┌────────────${NC} ${LIGHT}◈ Informasi Sistem ◈ ${NC}${YELLOW}────────────┐${NC}"
@@ -176,7 +176,7 @@ restore_backup() {
 test_mirror_speed() {
     clear
     echo -e "${YELLOW}┌──────────────────────────────────────────────┐${NC}"
-    echo -e "${YELLOW}│${NC} ${LIGHT}           SPEED TEST MIRROR SERVER           ${NC} ${YELLOW}│${NC}"
+    echo -e "${YELLOW}│${NC} ${LIGHT}           SPEED TEST MIRROR SERVER         ${NC} ${YELLOW}│${NC}"
     echo -e "${YELLOW}└──────────────────────────────────────────────┘${NC}"
     print_info "Sedang melakukan ping..."
 
